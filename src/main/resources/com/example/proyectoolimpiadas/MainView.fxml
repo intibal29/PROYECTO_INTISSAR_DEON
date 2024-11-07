@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.Menu?>
+
+<BorderPane fx:id="mainPane" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.proyectoolimpiadas.controller.MainController">
+    <top>
+        <MenuBar fx:id="menuBar">
+            <menus>
+                <Menu fx:id="menuDeportistas" text="Deportistas"/>
+                <Menu fx:id="menuOlimpiadas" text="Olimpiadas"/>
+                <Menu fx:id="menuEquipos" text="Equipos"/>
+                <Menu fx:id="menuDeportes" text="Deportes"/>
+                <Menu fx:id="menuEventos" text="Eventos"/>
+                <Menu fx:id="menuParticipaciones" text="Participaciones"/>
+            </menus>
+        </MenuBar>
+    </top>
+</BorderPane>
