@@ -38,7 +38,7 @@ public class LanguageManager {
      * Función que carga el bundle
      */
     private void loadResourceBundle() {
-        bundle = ResourceBundle.getBundle("../resources/com/intissar/olimpiadas/languages/" + locale.getLanguage());
+        bundle = ResourceBundle.getBundle("languages/" + locale.getLanguage());
     }
 
     /**

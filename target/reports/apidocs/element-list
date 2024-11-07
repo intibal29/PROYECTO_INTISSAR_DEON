@@ -1,0 +1,7 @@
+module:com.alesandro.olimpiadas
+com.intissar.olimpiadas
+com.intissar.olimpiadas.controladores
+com.intissar.olimpiadas.dao
+com.intissar.olimpiadas.db
+com.intissar.olimpiadas.language
+com.intissar.olimpiadas.model

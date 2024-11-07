@@ -1,0 +1,50 @@
+-J-Duser.language=
+-J-Duser.country=
+@options
+@packages
+@argfile
+--class-path
+'C:/Users/ciudadjardin/.m2/repository/com/mysql/mysql-connector-j/8.0.33/mysql-connector-j-8.0.33.jar;C:/Users/ciudadjardin/.m2/repository/com/google/protobuf/protobuf-java/3.21.9/protobuf-java-3.21.9.jar;C:/Users/ciudadjardin/.m2/repository/org/openjfx/javafx-controls/22.0.1/javafx-controls-22.0.1.jar;C:/Users/ciudadjardin/.m2/repository/org/openjfx/javafx-graphics/22.0.1/javafx-graphics-22.0.1.jar;C:/Users/ciudadjardin/.m2/repository/org/openjfx/javafx-base/22.0.1/javafx-base-22.0.1.jar;C:/Users/ciudadjardin/.m2/repository/org/openjfx/javafx-fxml/22.0.1/javafx-fxml-22.0.1.jar'
+--module-path
+'C:/Users/ciudadjardin/.m2/repository/org/openjfx/javafx-fxml/22.0.1/javafx-fxml-22.0.1-win.jar;C:/Users/ciudadjardin/.m2/repository/org/openjfx/javafx-graphics/22.0.1/javafx-graphics-22.0.1-win.jar;C:/Users/ciudadjardin/.m2/repository/org/openjfx/javafx-base/22.0.1/javafx-base-22.0.1-win.jar;C:/Users/ciudadjardin/Desktop/ooo/Ejes dein/ProyectoOlimpiadas/target/classes;C:/Users/ciudadjardin/.m2/repository/org/openjfx/javafx-controls/22.0.1/javafx-controls-22.0.1-win.jar'
+--patch-module
+com.alesandro.olimpiadas='C:/Users/ciudadjardin/Desktop/ooo/Ejes dein/ProyectoOlimpiadas/src/main/java'
+-encoding
+'UTF-8'
+-private
+--module-source-path
+'C:/Users/ciudadjardin/Desktop/ooo/Ejes dein/ProyectoOlimpiadas/target/reports/apidocs/src'
+-author
+-bottom
+'Copyright &#169; 2024. All rights reserved.'
+-charset
+'UTF-8'
+-d
+'C:/Users/ciudadjardin/Desktop/ooo/Ejes dein/ProyectoOlimpiadas/target/reports/apidocs'
+-docencoding
+'UTF-8'
+-doctitle
+'olimpiadas 1.0-SNAPSHOT API'
+-nohelp
+-use
+-version
+-windowtitle
+'olimpiadas 1.0-SNAPSHOT API'
+com.intissar.olimpiadas.controladores
+com.intissar.olimpiadas.dao
+com.intissar.olimpiadas.language
+com.intissar.olimpiadas.model
+com.intissar.olimpiadas
+'C:/Users/ciudadjardin/Desktop/ooo/Ejes dein/ProyectoOlimpiadas/src/main/java/module-info.java'
+C:\Users\ciudadjardin\Desktop\ooo\Ejes dein\ProyectoOlimpiadas\target\reports\apidocs\allclasses-index.html = 1731017785826
+C:\Users\ciudadjardin\Desktop\ooo\Ejes dein\ProyectoOlimpiadas\target\reports\apidocs\allpackages-index.html = 1731017785831
+C:\Users\ciudadjardin\Desktop\ooo\Ejes dein\ProyectoOlimpiadas\target\reports\apidocs\element-list = 1731017785023
+C:\Users\ciudadjardin\Desktop\ooo\Ejes dein\ProyectoOlimpiadas\target\reports\apidocs\index-all.html = 1731017785962
+C:\Users\ciudadjardin\Desktop\ooo\Ejes dein\ProyectoOlimpiadas\target\reports\apidocs\index.html = 1731017785975
+C:\Users\ciudadjardin\Desktop\ooo\Ejes dein\ProyectoOlimpiadas\target\reports\apidocs\member-search-index.js = 1731017785846
+C:\Users\ciudadjardin\Desktop\ooo\Ejes dein\ProyectoOlimpiadas\target\reports\apidocs\module-search-index.js = 1731017785834
+C:\Users\ciudadjardin\Desktop\ooo\Ejes dein\ProyectoOlimpiadas\target\reports\apidocs\overview-tree.html = 1731017785770
+C:\Users\ciudadjardin\Desktop\ooo\Ejes dein\ProyectoOlimpiadas\target\reports\apidocs\package-search-index.js = 1731017785837
+C:\Users\ciudadjardin\Desktop\ooo\Ejes dein\ProyectoOlimpiadas\target\reports\apidocs\search.html = 1731017785967
+C:\Users\ciudadjardin\Desktop\ooo\Ejes dein\ProyectoOlimpiadas\target\reports\apidocs\tag-search-index.js = 1731017785861
+C:\Users\ciudadjardin\Desktop\ooo\Ejes dein\ProyectoOlimpiadas\target\reports\apidocs\type-search-index.js = 1731017785840

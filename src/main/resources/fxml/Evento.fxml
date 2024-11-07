@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="550.0" stylesheets="@../style/style.css" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <FlowPane alignment="CENTER">
+         <children>
+            <Label text="%event.title">
+               <font>
+                  <Font size="26.0" /> <!-- Aumenté el tamaño de la fuente -->
+               </font>
+            </Label>
+         </children>
+         <padding>
+            <Insets bottom="10.0" /> <!-- Aumenté el padding inferior -->
+         </padding>
+      </FlowPane>
+      <HBox alignment="CENTER_LEFT">
+         <children>
+            <Label text="%event.name" />
+            <TextField fx:id="txtNombre">
+               <HBox.margin>
+                  <Insets left="10.0" />
+               </HBox.margin>
+            </TextField>
+         </children>
+         <padding>
+            <Insets bottom="10.0" left="10.0" right="10.0" top="5.0" /> <!-- Aumenté el padding -->
+         </padding>
+         <VBox.margin>
+            <Insets />
+         </VBox.margin>
+      </HBox>
+      <FlowPane alignment="CENTER" hgap="20.0" prefHeight="200.0" prefWidth="200.0">
+         <children>
+            <VBox prefHeight="200.0">
+               <children>
+                  <Label text="%event.olympic">
+                     <padding>
+                        <Insets bottom="5.0" />
+                     </padding>
+                  </Label>
+                  <ListView fx:id="lstOlimpiada" />
+               </children>
+            </VBox>
+            <VBox prefHeight="200.0">
+               <children>
+                  <Label text="%event.sport">
+                     <padding>
+                        <Insets bottom="5.0" />
+                     </padding>
+                  </Label>
+                  <ListView fx:id="lstDeporte" />
+               </children>
+            </VBox>
+         </children>
+         <padding>
+            <Insets bottom="10.0" top="10.0" /> <!-- Aumenté el padding -->
+         </padding>
+      </FlowPane>
+      <FlowPane alignment="CENTER" hgap="20.0">
+         <children>
+            <Button defaultButton="true" mnemonicParsing="false" onAction="#guardar" styleClass="btnGuardar" text="%btn.save" />
+            <Button cancelButton="true" mnemonicParsing="false" onAction="#cancelar" styleClass="btnCerrar" text="%btn.cancel" />
+         </children>
+         <VBox.margin>
+            <Insets top="10.0" /> <!-- Aumenté el margen superior -->
+         </VBox.margin>
+      </FlowPane>
+   </children>
+   <padding>
+      <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+   </padding>
+</VBox>

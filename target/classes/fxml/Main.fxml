@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.RadioMenuItem?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.control.Tooltip?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="500.0" prefWidth="800.0" stylesheets="@../style/style.css" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.intissar.olimpiadas.controladores.MainController">
+    <children>
+        <MenuBar>
+            <Menu text="%menu.file">
+                <MenuItem onAction="#deportes" text="%menu.file.sports" accelerator="Ctrl+S"/>
+                <MenuItem onAction="#equipos" text="%menu.file.teams" accelerator="Ctrl+T"/>
+                <MenuItem onAction="#olimpiadas" text="%menu.file.olympics" accelerator="Ctrl+O"/>
+            </Menu>
+            <Menu text="%menu.edit">
+                <MenuItem onAction="#aniadir" text="%menu.edit.add" accelerator="Ctrl+N"/>
+                <MenuItem fx:id="btnEditar" disable="true" onAction="#editar" text="%menu.edit.edit" accelerator="Ctrl+E"/>
+                <MenuItem fx:id="btnEliminar" disable="true" onAction="#eliminar" text="%menu.edit.delete" accelerator="Ctrl+BACK_SPACE"/>
+            </Menu>
+            <Menu text="%menu.help">
+                <Menu text="%menu.help.language">
+                    <RadioMenuItem fx:id="langES" text="Español">
+                        <toggleGroup>
+                            <ToggleGroup fx:id="tgIdioma" />
+                        </toggleGroup>
+                    </RadioMenuItem>
+                    <RadioMenuItem fx:id="langEN" text="English" toggleGroup="$tgIdioma" />
+                    <RadioMenuItem fx:id="langEU" text="Euskara" toggleGroup="$tgIdioma" />
+                </Menu>
+            </Menu>
+        </MenuBar>
+        <FlowPane alignment="CENTER" hgap="20.0">
+            <ImageView fitHeight="150.0" fitWidth="100.0" preserveRatio="true">
+                <image>
+                    <Image url="@../images/Olimpiadas.png" />
+                </image>
+            </ImageView>
+            <Label text="%main.title"/>
+        </FlowPane>
+        <BorderPane>
+            <left>
+                <HBox alignment="CENTER">
+                    <Label text="%main.label.table" />
+                    <ComboBox fx:id="cbTabla" prefWidth="150.0">
+                        <tooltip>
+                            <Tooltip text="%cb.tooltip" />
+                        </tooltip>
+                    </ComboBox>
+                </HBox>
+            </left>
+            <center>
+                <Button onAction="#aniadir" styleClass="btnAccion" text="%main.button.add">
+                    <tooltip>
+                        <Tooltip text="%main.button.add.tooltip" />
+                    </tooltip>
+                </Button>
+            </center>
+            <right>
+                <HBox alignment="CENTER">
+                    <Label text="%main.label.filter" />
+                    <TextField fx:id="filtroNombre">
+                        <tooltip>
+                            <Tooltip text="%main.tooltip.filter" />
+                        </tooltip>
+                    </TextField>
+                </HBox>
+            </right>
+        </BorderPane>
+        <TableView fx:id="tabla" VBox.vgrow="ALWAYS" />
+    </children>
+</VBox>
