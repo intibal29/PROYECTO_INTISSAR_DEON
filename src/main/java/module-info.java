@@ -1,11 +1,15 @@
-module com.example.proyectoolimpiadas {
+module com.alesandro.olimpiadas {
     requires javafx.controls;
     requires javafx.fxml;
     requires java.sql;
 
 
-    opens com.example.proyectoolimpiadas to javafx.fxml;
-    exports com.example.proyectoolimpiadas;
-    exports com.example.proyectoolimpiadas.controller;
-    opens com.example.proyectoolimpiadas.controller to javafx.fxml;
+    opens com.intissar.olimpiadas to javafx.fxml;
+    exports com.intissar.olimpiadas;
+    exports com.intissar.olimpiadas.controladores;
+    exports com.intissar.olimpiadas.model;
+    exports com.intissar.olimpiadas.dao;
+    opens com.intissar.olimpiadas.controladores to javafx.fxml;
+    exports com.intissar.olimpiadas.language;
+    opens com.intissar.olimpiadas.language to javafx.fxml;
 }
