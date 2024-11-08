@@ -583,127 +583,168 @@ public class MainController implements Initializable {
         }
     }
     /**
-     * Función que carga en la tabla las columnas de deportista y los deportistas
+     * Método que carga en la tabla las columnas y los datos de los deportistas.
      */
     private void cargarDeportistas() {
-        // Vaciar tabla
-        tabla.getSelectionModel().clearSelection();
-        filtroNombre.setText(null);
+        // Limpiar la selección y los filtros
+        limpiarTabla();
         filtroNombre.setDisable(false);
-        masterData.clear();
-        filteredData.clear();
-        tabla.getItems().clear();
-        tabla.getColumns().clear();
-        // Cargar columnas
-        TableColumn<Deportista, Integer> colId = new TableColumn<>("ID");
-        colId.setCellValueFactory(new PropertyValueFactory<>("id_deportista"));
-        TableColumn<Deportista, String> colNombre = new TableColumn<>(resources.getString("table.athlete.name"));
-        colNombre.setCellValueFactory(new PropertyValueFactory<>("nombre"));
-        TableColumn<Deportista, Deportista.SexCategory> colSexo = new TableColumn<>(resources.getString("table.athlete.sex"));
-        colSexo.setCellValueFactory(new PropertyValueFactory<>("sexo"));
-        TableColumn<Deportista, Integer> colPeso = new TableColumn<>(resources.getString("table.athlete.weight"));
-        colPeso.setCellValueFactory(new PropertyValueFactory<>("peso"));
-        TableColumn<Deportista, Integer> colAltura = new TableColumn<>(resources.getString("table.athlete.height"));
-        colAltura.setCellValueFactory(new PropertyValueFactory<>("altura"));
-        tabla.getColumns().addAll(colId,colNombre,colSexo,colPeso,colAltura);
-        // Cargar deportistas
+
+        // Definir y agregar columnas a la tabla
+        agregarColumnasDeportistas();
+
+        // Cargar los datos de los deportistas desde la base de datos
         ObservableList<Deportista> deportistas = DaoDeportista.cargarListado();
-        masterData.setAll(deportistas);
-        tabla.setItems(deportistas);
+        masterData.setAll(deportistas); // Actualizar la lista maestra
+        tabla.setItems(deportistas); // Establecer los elementos de la tabla
     }
 
     /**
-     * Función que carga en la tabla las columnas de participaciones y las participaciones
+     * Método que carga en la tabla las columnas y los datos de las participaciones.
      */
     private void cargarParticipaciones() {
-        // Vaciar tabla
-        tabla.getSelectionModel().clearSelection();
-        filtroNombre.setText(null);
+        // Limpiar la selección y los filtros
+        limpiarTabla();
         filtroNombre.setDisable(true);
-        masterData.clear();
-        filteredData.clear();
-        tabla.getItems().clear();
-        tabla.getColumns().clear();
-        // Cargar columnas
+
+        // Definir y agregar columnas a la tabla
+        agregarColumnasParticipaciones();
+
+        // Cargar los datos de las participaciones desde la base de datos
+        ObservableList<Participacion> participaciones = DaoParticipacion.cargarListado();
+        masterData.addAll(participaciones); // Actualizar la lista maestra
+        tabla.setItems(participaciones); // Establecer los elementos de la tabla
+    }
+
+    /**
+     * Método auxiliar para limpiar la tabla y sus filtros.
+     */
+    private void limpiarTabla() {
+        tabla.getSelectionModel().clearSelection(); // Limpiar la selección actual
+        filtroNombre.setText(null); // Reiniciar el filtro de nombre
+        masterData.clear(); // Limpiar la lista maestra
+        filteredData.clear(); // Limpiar la lista filtrada
+        tabla.getItems().clear(); // Limpiar los elementos de la tabla
+        tabla.getColumns().clear(); // Limpiar las columnas de la tabla
+    }
+
+    /**
+     * Método auxiliar para agregar las columnas de deportistas a la tabla.
+     */
+    private void agregarColumnasDeportistas() {
+        TableColumn<Deportista, Integer> colId = new TableColumn<>("ID");
+        colId.setCellValueFactory(new PropertyValueFactory<>("id_deportista"));
+
+        TableColumn<Deportista, String> colNombre = new TableColumn<>(resources.getString("table.athlete.name"));
+        colNombre.setCellValueFactory(new PropertyValueFactory<>("nombre"));
+
+        TableColumn<Deportista, Deportista.SexCategory> colSexo = new TableColumn<>(resources.getString("table.athlete.sex"));
+        colSexo.setCellValueFactory(new PropertyValueFactory<>("sexo"));
+
+        TableColumn<Deportista, Integer> colPeso = new TableColumn<>(resources.getString("table.athlete.weight"));
+        colPeso.setCellValueFactory(new PropertyValueFactory<>("peso"));
+
+        TableColumn<Deportista, Integer> colAltura = new TableColumn<>(resources.getString("table.athlete.height"));
+        colAltura.setCellValueFactory(new PropertyValueFactory<>("altura"));
+
+        tabla.getColumns().addAll(colId, colNombre, colSexo, colPeso, colAltura); // Agregar columnas a la tabla
+    }
+
+    /**
+     * Método auxiliar para agregar las columnas de participaciones a la tabla.
+     */
+    private void agregarColumnasParticipaciones() {
         TableColumn<Participacion, String> colDeportista = new TableColumn<>(resources.getString("table.participation.athlete"));
         colDeportista.setCellValueFactory(cellData -> javafx.beans.binding.Bindings.createObjectBinding(() -> cellData.getValue().getDeportista().getNombre()));
+
         TableColumn<Participacion, String> colEvento = new TableColumn<>(resources.getString("table.participation.event"));
         colEvento.setCellValueFactory(cellData -> javafx.beans.binding.Bindings.createObjectBinding(() -> cellData.getValue().getEvento().getNombre()));
+
         TableColumn<Participacion, String> colEquipo = new TableColumn<>(resources.getString("table.participation.team"));
         colEquipo.setCellValueFactory(cellData -> javafx.beans.binding.Bindings.createObjectBinding(() -> cellData.getValue().getEquipo().getNombre()));
+
         TableColumn<Participacion, Integer> colEdad = new TableColumn<>(resources.getString("table.participation.age"));
-        colEdad.setCellValueFactory(new PropertyValueFactory("edad"));
+        colEdad.setCellValueFactory(new PropertyValueFactory<>("edad"));
+
         TableColumn<Participacion, String> colMedalla = new TableColumn<>(resources.getString("table.participation.medal"));
-        colMedalla.setCellValueFactory(new PropertyValueFactory("medalla"));
-        tabla.getColumns().addAll(colDeportista,colEvento,colEquipo,colEdad,colMedalla);
-        // Cargar participaciones
-        ObservableList<Participacion> participaciones = DaoParticipacion.cargarListado();
-        masterData.addAll(participaciones);
-        tabla.setItems(participaciones);
+        colMedalla.setCellValueFactory(new PropertyValueFactory<>("medalla"));
+
+        tabla.getColumns().addAll(colDeportista, colEvento, colEquipo, colEdad, colMedalla); // Agregar columnas a la tabla
     }
 
     /**
-     * Función que carga en la tabla las columnas de eventos y los eventos
+     * Método que carga en la tabla las columnas y los datos de los eventos.
      */
     private void cargarEventos() {
-        // Vaciar tabla
-        tabla.getSelectionModel().clearSelection();
-        filtroNombre.setText(null);
-        filtroNombre.setDisable(false);
-        masterData.clear();
-        filteredData.clear();
-        tabla.getItems().clear();
-        tabla.getColumns().clear();
-        // Cargar columnas
+        // Limpiar la selección y los filtros
+        limpiarTabla();
+        filtroNombre.setDisable(false); // Habilitar el filtro de nombre
+
+        // Definir y agregar columnas a la tabla
+        agregarColumnasEventos();
+
+        // Cargar los datos de los eventos desde la base de datos
+        ObservableList<Evento> eventos = DaoEvento.cargarListado();
+        masterData.setAll(eventos); // Actualizar la lista maestra
+        tabla.setItems(eventos); // Establecer los elementos de la tabla
+    }
+
+    /**
+     * Método auxiliar para agregar las columnas de eventos a la tabla.
+     */
+    private void agregarColumnasEventos() {
         TableColumn<Evento, Integer> colId = new TableColumn<>("ID");
-        colId.setCellValueFactory(new PropertyValueFactory("id_evento"));
+        colId.setCellValueFactory(new PropertyValueFactory<>("id_evento"));
+
         TableColumn<Evento, String> colNombre = new TableColumn<>(resources.getString("table.event.name"));
-        colNombre.setCellValueFactory(new PropertyValueFactory("nombre"));
+        colNombre.setCellValueFactory(new PropertyValueFactory<>("nombre"));
+
         TableColumn<Evento, String> colOlimpiada = new TableColumn<>(resources.getString("table.event.olympic"));
         colOlimpiada.setCellValueFactory(cellData -> javafx.beans.binding.Bindings.createObjectBinding(() -> cellData.getValue().getOlimpiada().getNombre()));
+
         TableColumn<Evento, String> colDeporte = new TableColumn<>(resources.getString("table.event.sport"));
         colDeporte.setCellValueFactory(cellData -> javafx.beans.binding.Bindings.createObjectBinding(() -> cellData.getValue().getDeporte().getNombre()));
-        tabla.getColumns().addAll(colId,colNombre,colOlimpiada,colDeporte);
-        // Cargar eventos
-        ObservableList<Evento> eventos = DaoEvento.cargarListado();
-        masterData.setAll(eventos);
-        tabla.setItems(eventos);
+
+        tabla.getColumns().addAll(colId, colNombre, colOlimpiada, colDeporte); // Agregar columnas a la tabla
     }
 
     /**
-     * Función que deshabilita o habilita los menus de edición
+     * Método que habilita o deshabilita los menús de edición.
      *
-     * @param deshabilitado los menus
+     * @param deshabilitado Indica si los menús deben estar deshabilitados
      */
     private void deshabilitarMenus(boolean deshabilitado) {
-        btnEditar.setDisable(deshabilitado);
-        btnEliminar.setDisable(deshabilitado);
+        btnEditar.setDisable(deshabilitado); // Deshabilitar el botón de editar
+        btnEliminar.setDisable(deshabilitado); // Deshabilitar el botón de eliminar
     }
 
+
     /**
-     * Función que muestra un mensaje de alerta al usuario
+     * Método que muestra un mensaje de alerta al usuario.
      *
-     * @param texto contenido de la alerta
+     * @param mensaje Contenido del mensaje de alerta
      */
-    public void alerta(String texto) {
+    public void alerta(String mensaje) {
+        // Crear una alerta de tipo ERROR
         Alert alerta = new Alert(Alert.AlertType.ERROR);
-        alerta.setHeaderText(null);
-        alerta.setTitle("Error");
-        alerta.setContentText(texto);
-        alerta.showAndWait();
+        alerta.setHeaderText(null); // No mostrar encabezado
+        alerta.setTitle("Error"); // Título de la alerta
+        alerta.setContentText(mensaje); // Contenido del mensaje
+        alerta.showAndWait(); // Mostrar la alerta y esperar a que el usuario la cierre
     }
 
     /**
-     * Función que muestra un mensaje de confirmación al usuario
+     * Método que muestra un mensaje de confirmación al usuario.
      *
-     * @param texto contenido del mensaje
+     * @param mensaje Contenido del mensaje de confirmación
      */
-    public void confirmacion(String texto) {
-        Alert alerta = new Alert(Alert.AlertType.INFORMATION);
-        alerta.setHeaderText(null);
-        alerta.setTitle("Info");
-        alerta.setContentText(texto);
-        alerta.showAndWait();
+    public void confirmacion(String mensaje) {
+        // Crear una alerta de tipo INFORMATION
+        Alert confirmacion = new Alert(Alert.AlertType.INFORMATION);
+        confirmacion.setHeaderText(null); // No mostrar encabezado
+        confirmacion.setTitle("Información"); // Título de la confirmación
+        confirmacion.setContentText(mensaje); // Contenido del mensaje
+        confirmacion.showAndWait(); // Mostrar la confirmación y esperar a que el usuario la cierre
     }
 
 }
