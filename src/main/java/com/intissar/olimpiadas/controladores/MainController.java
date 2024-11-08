@@ -84,8 +84,6 @@ public class MainController implements Initializable {
             return; // Si hay un error, se cierra la aplicación
         }
 
-        // Configurar idioma
-        configurarIdioma();
 
         // Configurar ComboBox
         configurarComboBox();
@@ -113,26 +111,6 @@ public class MainController implements Initializable {
         }
     }
 
-    /**
-     * Configura el idioma de la aplicación según la configuración actual.
-     */
-    private void configurarIdioma() {
-        Locale locale = resources.getLocale();
-        if (locale.equals(new Locale("es"))) {
-            langES.setSelected(true);
-        } else if (locale.equals(new Locale("en"))) {
-            langEN.setSelected(true);
-        } else {
-            langEU.setSelected(true);
-        }
-
-        // Cambiar idioma al seleccionar un nuevo idioma
-        tgIdioma.selectedToggleProperty().addListener((observableValue, oldToggle, newToggle) -> {
-            Locale newLocale = langES.isSelected() ? new Locale("es") :
-                    langEN.isSelected() ? new Locale("en") : new Locale("eu");
-            new LanguageSwitcher((Stage) tabla.getScene().getWindow()).switchLanguage(newLocale);
-        });
-    }
 
     /**
      * Configura el ComboBox para seleccionar la tabla a mostrar.
