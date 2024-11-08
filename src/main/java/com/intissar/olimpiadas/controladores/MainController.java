@@ -70,44 +70,75 @@ public class MainController implements Initializable {
     private ObservableList filteredData = FXCollections.observableArrayList();
 
     /**
-     * Función que se ejecuta cuando se inicia la ventana
+     * Función que se ejecuta cuando se inicia la ventana.
      *
-     * @param url
-     * @param resourceBundle
+     * @param url URL de la ubicación de los recursos
+     * @param resourceBundle ResourceBundle para la localización
      */
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         this.resources = resourceBundle;
+
         // Controlar acceso a la base de datos
+        if (!iniciarBaseDeDatos()) {
+            return; // Si hay un error, se cierra la aplicación
+        }
+
+        // Configurar idioma
+        configurarIdioma();
+
+        // Configurar ComboBox
+        configurarComboBox();
+
+        // Configurar tabla
+        configurarTabla();
+
+        // Carga inicial de deportistas
+        cargarDeportistas();
+    }
+
+    /**
+     * Intenta establecer la conexión a la base de datos.
+     *
+     * @return true si la conexión fue exitosa, false en caso contrario
+     */
+    private boolean iniciarBaseDeDatos() {
         try {
             new DBConnect();
+            return true;
         } catch (SQLException e) {
             alerta(resources.getString("db.error"));
             Platform.exit(); // Cierra la aplicación
-            return;
+            return false;
         }
-        // Select de idioma
-        if (resources.getLocale().equals(new Locale("es"))) {
+    }
+
+    /**
+     * Configura el idioma de la aplicación según la configuración actual.
+     */
+    private void configurarIdioma() {
+        Locale locale = resources.getLocale();
+        if (locale.equals(new Locale("es"))) {
             langES.setSelected(true);
-        } else if (resources.getLocale().equals(new Locale("en"))) {
+        } else if (locale.equals(new Locale("en"))) {
             langEN.setSelected(true);
         } else {
             langEU.setSelected(true);
         }
-        // Idioma
+
+        // Cambiar idioma al seleccionar un nuevo idioma
         tgIdioma.selectedToggleProperty().addListener((observableValue, oldToggle, newToggle) -> {
-            Locale locale;
-            if (langES.isSelected()) {
-                locale = new Locale("es");
-            } else if (langEN.isSelected()) {
-                locale = new Locale("en");
-            } else {
-                locale = new Locale("eu");
-            }
-            new LanguageSwitcher((Stage) tabla.getScene().getWindow()).switchLanguage(locale);
+            Locale newLocale = langES.isSelected() ? new Locale("es") :
+                    langEN.isSelected() ? new Locale("en") : new Locale("eu");
+            new LanguageSwitcher((Stage) tabla.getScene().getWindow()).switchLanguage(newLocale);
         });
-        // Event Listener para ComboBox
-        cbTabla.getItems().addAll(resources.getString("cb.athletes"),resources.getString("cb.participations"),resources.getString("cb.events"));
+    }
+
+    /**
+     * Configura el ComboBox para seleccionar la tabla a mostrar.
+     */
+    private void configurarComboBox() {
+        cbTabla.getItems().addAll(resources.getString("cb.athletes"), resources.getString("cb.participations"), resources.getString("cb.events"));
         cbTabla.setValue(resources.getString("cb.athletes"));
         cbTabla.getSelectionModel().selectedItemProperty().addListener((observableValue, oldValue, newValue) -> {
             if (newValue.equals(resources.getString("cb.athletes"))) {
@@ -118,15 +149,22 @@ public class MainController implements Initializable {
                 cargarEventos();
             }
         });
+    }
+
+    /**
+     * Configura la tabla y sus eventos.
+     */
+    private void configurarTabla() {
         // Event Listener para celdas de la tabla
         tabla.getSelectionModel().selectedItemProperty().addListener((observableValue, oldValue, newValue) -> {
             deshabilitarMenus(newValue == null);
         });
+
         // Context Menu
         ContextMenu contextMenu = new ContextMenu();
         MenuItem editarItem = new MenuItem(resources.getString("contextmenu.edit"));
         MenuItem borrarItem = new MenuItem(resources.getString("contextmenu.delete"));
-        contextMenu.getItems().addAll(editarItem,borrarItem);
+        contextMenu.getItems().addAll(editarItem, borrarItem);
         editarItem.setOnAction(this::editar);
         borrarItem.setOnAction(this::eliminar);
         tabla.setRowFactory(tv -> {
@@ -139,16 +177,16 @@ public class MainController implements Initializable {
             });
             return row;
         });
+
         // Event Listener para el filtro
         filtroNombre.setOnKeyTyped(keyEvent -> filtrar());
+
         // Doble-click para editar
         tabla.setOnMouseClicked(event -> {
             if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 2) {
                 editar(null);
             }
         });
-        // Carga inicial
-        cargarDeportistas();
     }
 
     /**
@@ -196,98 +234,87 @@ public class MainController implements Initializable {
     }
 
     /**
-     * Función que se ejecuta cuando se pulsa el botón "Añadir". Abre una ventana para añadir objetos de la tabla seleccionada
+     * Método que se ejecuta al presionar el botón "Añadir".
+     * Abre una ventana para agregar un nuevo objeto en la tabla seleccionada.
      *
-     * @param event
+     * @param event Evento de acción
      */
     @FXML
     void aniadir(ActionEvent event) {
-        String item = cbTabla.getSelectionModel().getSelectedItem();
-        if (item.equals(resources.getString("cb.athletes"))) {
-            // Deportista
-            try {
-                Window ventana = tabla.getScene().getWindow();
-                FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/Deportista.fxml"),resources);
-                DeportistaController controlador = new DeportistaController();
-                fxmlLoader.setController(controlador);
-                Scene scene = new Scene(fxmlLoader.load());
-                Stage stage = new Stage();
-                stage.setScene(scene);
-                stage.setResizable(false);
-                stage.getIcons().add(new Image(getClass().getResourceAsStream("/images/Olimpiadas.png")));
-                stage.setTitle(resources.getString("window.add") + " " + resources.getString("window.athlete") + " - " + resources.getString("app.name"));
-                stage.initOwner(ventana);
-                stage.initModality(Modality.APPLICATION_MODAL);
-                stage.showAndWait();
-                cargarDeportistas();
-            } catch (IOException e) {
-                System.err.println(e.getMessage());
-                alerta(resources.getString("message.window_open"));
+        String selectedItem = cbTabla.getSelectionModel().getSelectedItem();
+        try {
+            Window parentWindow = tabla.getScene().getWindow();
+            String fxmlPath;
+            String title;
+            Object controller;
+
+            // Determinar el tipo de objeto a añadir y configurar el controlador y la vista
+            if (selectedItem.equals(resources.getString("cb.athletes"))) {
+                fxmlPath = "/fxml/Deportista.fxml";
+                title = resources.getString("window.add") + " " + resources.getString("window.athlete") + " - " + resources.getString("app.name");
+                controller = new DeportistaController();
+            } else if (selectedItem.equals(resources.getString("cb.participations"))) {
+                fxmlPath = "/fxml/Participacion.fxml";
+                title = resources.getString("window.add") + " " + resources.getString("window.participation") + " - " + resources.getString("app.name");
+                controller = new ParticipacionController();
+            } else {
+                fxmlPath = "/fxml/Evento.fxml";
+                title = resources.getString("window.add") + " " + resources.getString("window.event") + " - " + resources.getString("app.name");
+                controller = new EventoController();
             }
-        } else if (item.equals(resources.getString("cb.participations"))) {
-            // Participación
-            try {
-                Window ventana = tabla.getScene().getWindow();
-                FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/Participacion.fxml"),resources);
-                ParticipacionController controlador = new ParticipacionController();
-                fxmlLoader.setController(controlador);
-                Scene scene = new Scene(fxmlLoader.load());
-                Stage stage = new Stage();
-                stage.setScene(scene);
-                stage.setResizable(false);
-                stage.getIcons().add(new Image(getClass().getResourceAsStream("/images/Olimpiadas.png")));
-                stage.setTitle(resources.getString("window.add") + " " + resources.getString("window.participation") + " - " + resources.getString("app.name"));
-                stage.initOwner(ventana);
-                stage.initModality(Modality.APPLICATION_MODAL);
-                stage.showAndWait();
-                cargarParticipaciones();
-            } catch (IOException e) {
-                System.err.println(e.getMessage());
-                alerta(resources.getString("message.window_open"));
-            }
-        } else {
-            // Evento
-            try {
-                Window ventana = tabla.getScene().getWindow();
-                FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/Evento.fxml"),resources);
-                EventoController controlador = new EventoController();
-                fxmlLoader.setController(controlador);
-                Scene scene = new Scene(fxmlLoader.load());
-                Stage stage = new Stage();
-                stage.setScene(scene);
-                stage.setResizable(false);
-                stage.getIcons().add(new Image(getClass().getResourceAsStream("/images/Olimpiadas.png")));
-                stage.setTitle(resources.getString("window.add") + " " + resources.getString("window.event") + " - " + resources.getString("app.name"));
-                stage.initOwner(ventana);
-                stage.initModality(Modality.APPLICATION_MODAL);
-                stage.showAndWait();
-                cargarEventos();
-            } catch (IOException e) {
-                System.err.println(e.getMessage());
-                alerta(resources.getString("message.window_open"));
-            }
+
+            // Cargar la ventana correspondiente
+            abrirVentana(fxmlPath, title, controller, parentWindow);
+
+        } catch (IOException e) {
+            System.err.println(e.getMessage());
+            alerta(resources.getString("message.window_open"));
         }
     }
 
     /**
-     * Función que se ejecuta cuando se pulsa el menu item "Deportes". Abre la ventana de deportes
+     * Método auxiliar para abrir una nueva ventana.
      *
-     * @param event
+     * @param fxmlPath Ruta del archivo FXML
+     * @param title Título de la ventana
+     * @param controller Controlador para la nueva ventana
+     * @param parentWindow Ventana padre
+     * @throws IOException Si ocurre un error al cargar el FXML
+     */
+    private void abrirVentana(String fxmlPath, String title, Object controller, Window parentWindow) throws IOException {
+        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(fxmlPath), resources);
+        fxmlLoader.setController(controller);
+        Scene scene = new Scene(fxmlLoader.load());
+        Stage stage = new Stage();
+        stage.setScene(scene);
+        stage.setResizable(false);
+        stage.getIcons().add(new Image(getClass().getResourceAsStream("/images/Olimpiadas.png")));
+        stage.setTitle(title);
+        stage.initOwner(parentWindow);
+        stage.initModality(Modality.APPLICATION_MODAL);
+        stage.showAndWait();
+
+        // Recargar los datos según el tipo de objeto añadido
+        if (controller instanceof DeportistaController) {
+            cargarDeportistas();
+        } else if (controller instanceof ParticipacionController) {
+            cargarParticipaciones();
+        } else {
+            cargarEventos();
+        }
+    }
+
+    /**
+     * Método que se ejecuta al seleccionar el menú "Deportes".
+     * Abre la ventana correspondiente a la gestión de deportes.
+     *
+     * @param event Evento de acción
      */
     @FXML
     void deportes(ActionEvent event) {
         try {
-            Window ventana = tabla.getScene().getWindow();
-            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/Deportes.fxml"),resources);
-            Scene scene = new Scene(fxmlLoader.load());
-            Stage stage = new Stage();
-            stage.setScene(scene);
-            stage.setResizable(false);
-            stage.getIcons().add(new Image(getClass().getResourceAsStream("/images/Olimpiadas.png")));
-            stage.setTitle(resources.getString("window.sports") + " - " + resources.getString("app.name"));
-            stage.initOwner(ventana);
-            stage.initModality(Modality.APPLICATION_MODAL);
-            stage.showAndWait();
+            Window parentWindow = tabla.getScene().getWindow();
+            abrirVentana("/fxml/Deportes.fxml", resources.getString("window.sports") + " - " + resources.getString("app.name"), parentWindow);
         } catch (IOException e) {
             System.err.println(e.getMessage());
             alerta(resources.getString("message.window_open"));
@@ -295,208 +322,266 @@ public class MainController implements Initializable {
     }
 
     /**
-     * Función que se ejecuta cuando se pulsa el menu item "Editar...". Abre la ventana para la edición del objeto
+     * Método auxiliar para abrir una nueva ventana.
      *
-     * @param event
+     * @param fxmlPath Ruta del archivo FXML
+     * @param title Título de la ventana
+     * @param parentWindow Ventana padre
+     * @throws IOException Si ocurre un error al cargar el FXML
+     */
+    private void abrirVentana(String fxmlPath, String title, Window parentWindow) throws IOException {
+        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(fxmlPath), resources);
+        Scene scene = new Scene(fxmlLoader.load());
+        Stage stage = new Stage();
+        stage.setScene(scene);
+        stage.setResizable(false);
+        stage.getIcons().add(new Image(getClass().getResourceAsStream("/images/Olimpiadas.png")));
+        stage.setTitle(title);
+        stage.initOwner(parentWindow);
+        stage.initModality(Modality.APPLICATION_MODAL);
+        stage.showAndWait();
+    }
+
+    /**
+     * Método que se ejecuta al seleccionar el menú "Editar...".
+     * Abre una ventana para editar el objeto seleccionado en la tabla.
+     *
+     * @param event Evento de acción
      */
     @FXML
     void editar(ActionEvent event) {
-        Object seleccion = tabla.getSelectionModel().getSelectedItem();
-        if (seleccion != null) {
-            String item = cbTabla.getSelectionModel().getSelectedItem();
-            if (item.equals(resources.getString("cb.athletes"))) {
-                // Deportista
-                Deportista deportista = (Deportista) seleccion;
-                try {
-                    Window ventana = tabla.getScene().getWindow();
-                    FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/Deportista.fxml"),resources);
-                    DeportistaController controlador = new DeportistaController(deportista);
-                    fxmlLoader.setController(controlador);
-                    Scene scene = new Scene(fxmlLoader.load());
-                    Stage stage = new Stage();
-                    stage.setScene(scene);
-                    stage.setResizable(false);
-                    stage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/Olimpiadas.png"))));
-                    stage.setTitle(resources.getString("window.edit") + " " + resources.getString("window.athlete") + " - " + resources.getString("app.name"));
-                    stage.initOwner(ventana);
-                    stage.initModality(Modality.APPLICATION_MODAL);
-                    stage.showAndWait();
-                    cargarDeportistas();
-                } catch (IOException e) {
-                    System.err.println(e.getMessage());
-                    alerta(resources.getString("message.window_open"));
+        Object selectedItem = tabla.getSelectionModel().getSelectedItem(); // Obtener el objeto seleccionado
+        if (selectedItem != null) {
+            String selectedTable = cbTabla.getSelectionModel().getSelectedItem(); // Obtener el tipo de objeto de la tabla
+            try {
+                Window parentWindow = tabla.getScene().getWindow(); // Obtener la ventana padre
+
+                // Determinar el tipo de objeto a editar y abrir la ventana correspondiente
+                if (selectedTable.equals(resources.getString("cb.athletes"))) {
+                    abrirVentanaDeportista((Deportista) selectedItem, parentWindow);
+                } else if (selectedTable.equals(resources.getString("cb.participations"))) {
+                    abrirVentanaParticipacion((Participacion) selectedItem, parentWindow);
+                } else {
+                    abrirVentanaEvento((Evento) selectedItem, parentWindow);
                 }
-            } else if (item.equals(resources.getString("cb.participations"))) {
-                // Participación
-                Participacion participacion = (Participacion) seleccion;
-                try {
-                    Window ventana = tabla.getScene().getWindow();
-                    FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/Participacion.fxml"),resources);
-                    ParticipacionController controlador = new ParticipacionController(participacion);
-                    fxmlLoader.setController(controlador);
-                    Scene scene = new Scene(fxmlLoader.load());
-                    Stage stage = new Stage();
-                    stage.setScene(scene);
-                    stage.setResizable(false);
-                    stage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/Olimpiadas.png"))));
-                    stage.setTitle(resources.getString("window.edit") + " " + resources.getString("window.participation") + " - " + resources.getString("app.name"));
-                    stage.initOwner(ventana);
-                    stage.initModality(Modality.APPLICATION_MODAL);
-                    stage.showAndWait();
-                    cargarParticipaciones();
-                } catch (IOException e) {
-                    System.err.println(e.getMessage());
-                    alerta(resources.getString("message.window_open"));
-                }
-            } else {
-                // Evento
-                Evento evento = (Evento) seleccion;
-                try {
-                    Window ventana = tabla.getScene().getWindow();
-                    FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/Evento.fxml"),resources);
-                    EventoController controlador = new EventoController(evento);
-                    fxmlLoader.setController(controlador);
-                    Scene scene = new Scene(fxmlLoader.load());
-                    Stage stage = new Stage();
-                    stage.setScene(scene);
-                    stage.setResizable(false);
-                    stage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/Olimpiadas.png"))));
-                    stage.setTitle(resources.getString("window.edit") + " " + resources.getString("window.event") + " - " + resources.getString("app.name"));
-                    stage.initOwner(ventana);
-                    stage.initModality(Modality.APPLICATION_MODAL);
-                    stage.showAndWait();
-                    cargarEventos();
-                } catch (IOException e) {
-                    System.err.println(e.getMessage());
-                    alerta(resources.getString("message.window_open"));
-                }
+            } catch (IOException e) {
+                System.err.println(e.getMessage());
+                alerta(resources.getString("message.window_open")); // Mostrar alerta en caso de error
             }
         }
     }
 
     /**
-     * Función que se ejecuta cuando se pulsa el menu item "Eliminar...". Elimina el objeto seleccionado
+     * Método auxiliar para abrir la ventana de edición de un deportista.
      *
-     * @param event
+     * @param deportista Objeto deportista a editar
+     * @param parentWindow Ventana padre
+     * @throws IOException Si ocurre un error al cargar el FXML
+     */
+    private void abrirVentanaDeportista(Deportista deportista, Window parentWindow) throws IOException {
+        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/Deportista.fxml"), resources);
+        DeportistaController controller = new DeportistaController(deportista);
+        fxmlLoader.setController(controller);
+        Scene scene = new Scene(fxmlLoader.load());
+        Stage stage = crearStage(scene, resources.getString("window.edit") + " " + resources.getString("window.athlete"));
+        stage.initOwner(parentWindow);
+        stage.showAndWait();
+        cargarDeportistas(); // Recargar la lista de deportistas
+    }
+
+    /**
+     * Método auxiliar para abrir la ventana de edición de una participación.
+     *
+     * @param participacion Objeto participación a editar
+     * @param parentWindow Ventana padre
+     * @throws IOException Si ocurre un error al cargar el FXML
+     */
+    private void abrirVentanaParticipacion(Participacion participacion, Window parentWindow) throws IOException {
+        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/Participacion.fxml"), resources);
+        ParticipacionController controller = new ParticipacionController(participacion);
+        fxmlLoader.setController(controller);
+        Scene scene = new Scene(fxmlLoader.load());
+        Stage stage = crearStage(scene, resources.getString("window.edit") + " " + resources.getString("window.participation"));
+        stage.initOwner(parentWindow);
+        stage.showAndWait();
+        cargarParticipaciones(); // Recargar la lista de participaciones
+    }
+
+    /**
+     * Método auxiliar para abrir la ventana de edición de un evento.
+     *
+     * @param evento Objeto evento a editar
+     * @param parentWindow Ventana padre
+     * @throws IOException Si ocurre un error al cargar el FXML
+     */
+    private void abrirVentanaEvento(Evento evento, Window parentWindow) throws IOException {
+        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/Evento.fxml"), resources);
+        EventoController controller = new EventoController(evento);
+        fxmlLoader.setController(controller);
+        Scene scene = new Scene(fxmlLoader.load());
+        Stage stage = crearStage(scene, resources.getString("window.edit") + " " + resources.getString("window.event"));
+        stage.initOwner(parentWindow);
+        stage.showAndWait();
+        cargarEventos(); // Recargar la lista de eventos
+    }
+
+    /**
+     * Método auxiliar para crear y configurar una nueva ventana (Stage).
+     *
+     * @param scene Escena a mostrar en la ventana
+     * @param title Título de la ventana
+     * @return La ventana configurada
+     */
+    private Stage crearStage(Scene scene, String title) {
+        Stage stage = new Stage();
+        stage.setScene(scene);
+        stage.setResizable(false);
+        stage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/Olimpiadas.png"))));
+        stage.setTitle(title);
+        stage.initModality(Modality.APPLICATION_MODAL);
+        return stage;
+    }
+    /**
+     * Método que se ejecuta al seleccionar el menú "Eliminar...".
+     * Elimina el objeto seleccionado en la tabla después de confirmar la acción.
+     *
+     * @param event Evento de acción
      */
     @FXML
     void eliminar(ActionEvent event) {
-        Object seleccion = tabla.getSelectionModel().getSelectedItem();
-        if (seleccion != null) {
-            String item = cbTabla.getSelectionModel().getSelectedItem();
-            if (item.equals(resources.getString("cb.athletes"))) {
-                // Deportista
-                Deportista deportista = (Deportista) seleccion;
-                if (DaoDeportista.esEliminable(deportista)) {
-                    Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-                    alert.initOwner(tabla.getScene().getWindow());
-                    alert.setHeaderText(null);
-                    alert.setTitle(resources.getString("window.confirm"));
-                    alert.setContentText(resources.getString("delete.athlete.prompt"));
-                    Optional<ButtonType> result = alert.showAndWait();
-                    if (result.get() == ButtonType.OK) {
-                        if (DaoDeportista.eliminar(deportista)) {
-                            cargarDeportistas();
-                            confirmacion(resources.getString("delete.athlete.success"));
-                        } else {
-                            alerta(resources.getString("delete.athlete.fail"));
-                        }
-                    }
-                } else {
-                    alerta(resources.getString("delete.athlete.error"));
-                }
-            } else if (item.equals(resources.getString("cb.participations"))) {
-                // Participación
-                Participacion participacion = (Participacion) seleccion;
-                Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-                alert.initOwner(tabla.getScene().getWindow());
-                alert.setHeaderText(null);
-                alert.setTitle(resources.getString("window.confirm"));
-                alert.setContentText(resources.getString("delete.participation.prompt"));
-                Optional<ButtonType> result = alert.showAndWait();
-                if (result.get() == ButtonType.OK) {
-                    if (DaoParticipacion.eliminar(participacion)) {
-                        cargarParticipaciones();
-                        confirmacion(resources.getString("delete.participation.success"));
-                    } else {
-                        alerta(resources.getString("delete.participation.fail"));
-                    }
-                }
+        Object selectedItem = tabla.getSelectionModel().getSelectedItem(); // Obtener el objeto seleccionado
+        if (selectedItem != null) {
+            String selectedTable = cbTabla.getSelectionModel().getSelectedItem(); // Obtener el tipo de objeto de la tabla
+
+            // Determinar el tipo de objeto a eliminar y proceder con la eliminación
+            if (selectedTable.equals(resources.getString("cb.athletes"))) {
+                eliminarDeportista((Deportista) selectedItem);
+            } else if (selectedTable.equals(resources.getString("cb.participations"))) {
+                eliminarParticipacion((Participacion) selectedItem);
             } else {
-                // Evento
-                Evento evento = (Evento) seleccion;
-                if (DaoEvento.esEliminable(evento)) {
-                    Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-                    alert.initOwner(tabla.getScene().getWindow());
-                    alert.setHeaderText(null);
-                    alert.setTitle(resources.getString("window.confirm"));
-                    alert.setContentText(resources.getString("delete.event.prompt"));
-                    Optional<ButtonType> result = alert.showAndWait();
-                    if (result.get() == ButtonType.OK) {
-                        if (DaoEvento.eliminar(evento)) {
-                            cargarEventos();
-                            confirmacion(resources.getString("delete.event.success"));
-                        } else {
-                            alerta(resources.getString("delete.event.fail"));
-                        }
-                    }
-                } else {
-                    alerta(resources.getString("delete.event.error"));
-                }
+                eliminarEvento((Evento) selectedItem);
             }
         }
     }
 
     /**
-     * Función que se ejecuta cuando se pulsa el menu item "Equipos". Abre la ventana de equipos
+     * Método auxiliar para eliminar un deportista.
      *
-     * @param event
+     * @param deportista Objeto deportista a eliminar
      */
-    @FXML
-    void equipos(ActionEvent event) {
-        try {
-            Window ventana = tabla.getScene().getWindow();
-            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/Equipos.fxml"),resources);
-            Scene scene = new Scene(fxmlLoader.load());
-            Stage stage = new Stage();
-            stage.setScene(scene);
-            stage.setResizable(false);
-            stage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/Olimpiadas.png"))));
-            stage.setTitle(resources.getString("window.teams") + " - " + resources.getString("app.name"));
-            stage.initOwner(ventana);
-            stage.initModality(Modality.APPLICATION_MODAL);
-            stage.showAndWait();
-        } catch (IOException e) {
-            System.err.println(e.getMessage());
-            alerta(resources.getString("message.window_open"));
+    private void eliminarDeportista(Deportista deportista) {
+        if (DaoDeportista.esEliminable(deportista)) {
+            if (confirmarEliminacion(resources.getString("delete.athlete.prompt"))) {
+                if (DaoDeportista.eliminar(deportista)) {
+                    cargarDeportistas(); // Recargar la lista de deportistas
+                    confirmacion(resources.getString("delete.athlete.success"));
+                } else {
+                    alerta(resources.getString("delete.athlete.fail"));
+                }
+            }
+        } else {
+            alerta(resources.getString("delete.athlete.error"));
         }
     }
 
     /**
-     * Función que se ejecuta cuando se pulsa el menu item "Olimpiadas". Abre la ventana de olimpiadas
+     * Método auxiliar para eliminar una participación.
      *
-     * @param event
+     * @param participacion Objeto participación a eliminar
+     */
+    private void eliminarParticipacion(Participacion participacion) {
+        if (confirmarEliminacion(resources.getString("delete.participation.prompt"))) {
+            if (DaoParticipacion.eliminar(participacion)) {
+                cargarParticipaciones(); // Recargar la lista de participaciones
+                confirmacion(resources.getString("delete.participation.success"));
+            } else {
+                alerta(resources.getString("delete.participation.fail"));
+            }
+        }
+    }
+
+    /**
+     * Método auxiliar para eliminar un evento.
+     *
+     * @param evento Objeto evento a eliminar
+     */
+    private void eliminarEvento(Evento evento) {
+        if (DaoEvento.esEliminable(evento)) {
+            if (confirmarEliminacion(resources.getString("delete.event.prompt"))) {
+                if (DaoEvento.eliminar(evento)) {
+                    cargarEventos(); // Recargar la lista de eventos
+                    confirmacion(resources.getString("delete.event.success"));
+                } else {
+                    alerta(resources.getString("delete.event.fail"));
+                }
+            }
+        } else {
+            alerta(resources.getString("delete.event.error"));
+        }
+    }
+
+    /**
+     * Método auxiliar para mostrar un diálogo de confirmación de eliminación.
+     *
+     * @param message Mensaje a mostrar en el diálogo
+     * @return true si el usuario confirma la eliminación, false en caso contrario
+     */
+    private boolean confirmarEliminacion(String message) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.initOwner(tabla.getScene().getWindow());
+        alert.setHeaderText(null);
+        alert.setTitle(resources.getString("window.confirm"));
+        alert.setContentText(message);
+        Optional<ButtonType> result = alert.showAndWait();
+        return result.isPresent() && result.get() == ButtonType.OK; // Retorna true si se confirma
+    }
+
+    /**
+     * Método que se ejecuta al seleccionar el menú "Equipos".
+     * Abre la ventana correspondiente a la gestión de equipos.
+     *
+     * @param event Evento de acción
+     */
+    @FXML
+    void equipos(ActionEvent event) {
+        abrirVentana("/fxml/Equipos.fxml", resources.getString("window.teams"));
+    }
+
+    /**
+     * Método que se ejecuta al seleccionar el menú "Olimpiadas".
+     * Abre la ventana correspondiente a la gestión de olimpiadas.
+     *
+     * @param event Evento de acción
      */
     @FXML
     void olimpiadas(ActionEvent event) {
+        abrirVentana("/fxml/Olimpiadas.fxml", resources.getString("window.olympics"));
+    }
+
+    /**
+     * Método auxiliar para abrir una nueva ventana.
+     *
+     * @param fxmlPath Ruta del archivo FXML
+     * @param title Título de la ventana
+     */
+    private void abrirVentana(String fxmlPath, String title) {
         try {
-            Window ventana = tabla.getScene().getWindow();
-            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/Olimpiadas.fxml"),resources);
+            Window parentWindow = tabla.getScene().getWindow(); // Obtener la ventana padre
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(fxmlPath), resources);
             Scene scene = new Scene(fxmlLoader.load());
             Stage stage = new Stage();
             stage.setScene(scene);
             stage.setResizable(false);
             stage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/Olimpiadas.png"))));
-            stage.setTitle(resources.getString("window.olympics") + " - " + resources.getString("app.name"));
-            stage.initOwner(ventana);
+            stage.setTitle(title + " - " + resources.getString("app.name")); // Establecer el título de la ventana
+            stage.initOwner(parentWindow);
             stage.initModality(Modality.APPLICATION_MODAL);
-            stage.showAndWait();
+            stage.showAndWait(); // Mostrar la ventana y esperar a que se cierre
         } catch (IOException e) {
             System.err.println(e.getMessage());
-            alerta(resources.getString("message.window_open"));
+            alerta(resources.getString("message.window_open")); // Mostrar alerta en caso de error
         }
     }
-
     /**
      * Función que carga en la tabla las columnas de deportista y los deportistas
      */
